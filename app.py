@@ -68,10 +68,6 @@ if st.button("Analyze Product"):
     st.progress(min(confidence, 1.0))
     st.write("Confidence Score:", round(confidence, 2))
 
-    st.subheader("Text Used For Sentiment Analysis")
-
-    for r in reviews:
-        st.write("-", r)
 
     db = connect_db()
 

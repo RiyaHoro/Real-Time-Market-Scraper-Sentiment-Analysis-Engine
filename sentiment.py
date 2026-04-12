@@ -10,5 +10,7 @@ def analyze_sentiment(text_list):
         blob = TextBlob(text)
 
         scores.append(blob.sentiment.polarity)
-
-    return sum(scores) / len(scores)
+    if scores:
+        return sum(scores) / len(scores)
+    else: 
+        return 0 

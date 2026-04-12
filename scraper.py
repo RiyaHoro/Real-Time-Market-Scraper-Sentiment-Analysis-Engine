@@ -30,7 +30,7 @@ def scrape_flipkart(url):
 
     # PRODUCT NAME
     name = "Flipkart Product"
-    name_tag = soup.select_one(".B_NuCI")
+    name_tag = soup.select_one("h1.v1zwn21k")
 
     if name_tag:
         name = name_tag.text.strip()
@@ -39,7 +39,7 @@ def scrape_flipkart(url):
     currency = "₹"
     price = 0
 
-    price_tag = soup.select_one("._30jeq3, .Nx9bqj")
+    price_tag = soup.select_one("div._30jeq3, div.Nx9bqj, div._16Jk6d")
 
     if price_tag:
         price_text = re.sub(r"[^\d]", "", price_tag.text)
@@ -51,8 +51,7 @@ def scrape_flipkart(url):
 
     # RATING
     rating = 0
-
-    rating_tag = soup.select_one("._3LWZlK")
+    rating_tag = soup.select_one("div._3LWZlK")
 
     if rating_tag:
         try:
@@ -60,22 +59,21 @@ def scrape_flipkart(url):
         except:
             rating = 0
 
-    # TEXT FOR SENTIMENT
+    # REVIEWS
     reviews = []
 
-    for tag in soup.select("._1mXcCf, p")[:6]:
+    review_tags = soup.select("div.t-ZTKy div")
 
+    for tag in review_tags[:6]:
         text = tag.text.strip()
 
-        if len(text) > 30:
+        if len(text) > 20:
             reviews.append(text)
 
     if not reviews:
-        reviews = ["Product description available but limited sentiment data"]
+        reviews = ["No reviews found"]
 
     return name, currency, price, rating, reviews
-
-
 # -----------------------------
 # TEST SITE SCRAPER
 # -----------------------------
@@ -85,10 +83,7 @@ def scrape_testsite(url):
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # -----------------
     # PRODUCT NAME
-    # -----------------
-
     name = "Test Product"
 
     name_tag = soup.select_one(".card-title")
@@ -96,14 +91,11 @@ def scrape_testsite(url):
     if name_tag:
         name = name_tag.text.strip()
 
-    # -----------------
     # PRICE
-    # -----------------
-
     currency = "$"
     price = 0
 
-    price_tag = soup.select_one(".price")
+    price_tag = soup.select_one("h4.price")
 
     if price_tag:
         price_text = re.sub(r"[^\d.]", "", price_tag.text)
@@ -113,39 +105,30 @@ def scrape_testsite(url):
         except:
             price = 0
 
-    # -----------------
     # RATING
-    # -----------------
-
     rating = 0
+
+    stars = soup.select(".ws-icon-star")
+
+    if stars:
+        rating = len(stars)
+
+    # REVIEWS 
+    reviews = []
+    review_count = 0
 
     review_tag = soup.select_one('[itemprop="reviewCount"]')
 
     if review_tag:
-        try:
-            reviews_count = int(review_tag.text.strip())
-
-            # simple approximation: convert review count to rating
-            rating = min(5, round(reviews_count / 2))
-
-        except:
-            rating = 0
-
-    # -----------------
-    # DESCRIPTION
-    # -----------------
-
-    desc_tag = soup.select_one(".description")
-
-    reviews = []
-
-    if desc_tag:
-        reviews.append(desc_tag.text.strip())
-
-    if not reviews:
-        reviews = ["Average product"]
+        review_count = int(review_tag.text.strip())
 
     return name, currency, price, rating, reviews
+
+
+# -----------------------------
+# GENERIC SCRAPER
+# -----------------------------
+
 def scrape_generic(url):
 
     response = requests.get(url, headers=headers)
