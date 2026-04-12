@@ -16,7 +16,7 @@ url = st.text_input("Enter Product Page URL")
 
 def decision(price, sentiment, rating):
 
-    score = (sentiment * 0.6) + ((rating / 5) * 0.4)
+    score = (sentiment * 0.7) + ((rating / 5) * 0.3)
 
     if score > 0.6:
         return "BUY RECOMMENDED"
@@ -64,7 +64,11 @@ if st.button("Analyze Product"):
     col4.metric("Recommendation", recommendation)
 
     st.success(recommendation)
+    confidence = abs(sentiment)
 
+    st.progress(min(confidence,1.0))
+
+    st.write("Confidence Score:", round(confidence,2))
     db = connect_db()
 
     df = pd.read_sql("SELECT * FROM product_analysis", db)

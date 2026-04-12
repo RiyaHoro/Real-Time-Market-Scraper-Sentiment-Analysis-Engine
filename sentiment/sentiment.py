@@ -1,11 +1,14 @@
 from textblob import TextBlob
 
-def analyze_sentiment(reviews):
 
-    combined = " ".join(reviews)
+def analyze_sentiment(text_list):
 
-    analysis = TextBlob(combined)
+    scores = []
 
-    score = analysis.sentiment.polarity
+    for text in text_list:
 
-    return score
+        blob = TextBlob(text)
+
+        scores.append(blob.sentiment.polarity)
+
+    return sum(scores) / len(scores)

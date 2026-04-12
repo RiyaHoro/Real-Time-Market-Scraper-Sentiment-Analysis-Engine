@@ -14,17 +14,14 @@ def scrape_data(url):
         response = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
     except:
-        return "Unknown Product", "₹", 50.0, 3.5, ["Sample review"]
+        return "Unknown Product", "$", 50.0, 3.5, ["average product"]
 
-    # ---------------------------
     # PRODUCT NAME
-    # ---------------------------
-
     name = None
 
     name_selectors = [
-        "#productTitle",      # Amazon
-        ".B_NuCI",            # Flipkart
+        "#productTitle",
+        ".B_NuCI",
         ".product-title",
         ".title",
         "h1"
@@ -37,100 +34,75 @@ def scrape_data(url):
             break
 
     if not name:
-        if soup.title:
-            name = soup.title.text.strip()
-        else:
-            name = "Unknown Product"
+        name = soup.title.text if soup.title else "Unknown Product"
 
-    # ---------------------------
     # PRICE
-    # ---------------------------
-
     price = None
-    currency = None
+    currency = "$"
 
-    # AMAZON PRICE
-    amazon_whole = soup.select_one(".a-price-whole")
-    amazon_fraction = soup.select_one(".a-price-fraction")
+    price_selectors = [
+        ".price",
+        ".price_color",
+        "._30jeq3",
+        ".a-price-whole"
+    ]
 
-    if amazon_whole:
-        currency = "$"
-        fraction = amazon_fraction.text if amazon_fraction else "00"
-        price = float(f"{amazon_whole.text.replace(',', '')}.{fraction}")
+    for selector in price_selectors:
 
-    # FLIPKART PRICE
-    if price is None:
-        tag = soup.select_one("._30jeq3")
+        tag = soup.select_one(selector)
+
         if tag:
             price_text = tag.text
-            currency = "₹"
-            price = float(re.sub(r"[^\d.]", "", price_text))
 
-    # GENERIC PRICE
-    if price is None:
-
-        generic_price = soup.select_one(".price")
-
-        if generic_price:
-            price_text = generic_price.text
-
-            if "$" in price_text:
-                currency = "$"
-            elif "₹" in price_text:
+            if "₹" in price_text:
                 currency = "₹"
-            else:
+            elif "$" in price_text:
                 currency = "$"
 
-            price = float(re.sub(r"[^\d.]", "", price_text))
+            match = re.search(r"\d+(\.\d+)?", price_text)
+
+            if match:
+                price = float(match.group())
+                break
 
     if price is None:
-        price = round(random.uniform(20, 100), 2)
-        currency = "$"
+        price = round(random.uniform(50, 200), 2)
 
-    # ---------------------------
     # RATING
-    # ---------------------------
-
     rating = None
 
-    # AMAZON RATING
-    amazon_rating = soup.select_one(".a-icon-alt")
+    rating_selectors = [
+        "._3LWZlK",
+        ".a-icon-alt",
+        ".rating",
+    ]
 
-    if amazon_rating:
-        match = re.search(r"\d+(\.\d+)?", amazon_rating.text)
-        if match:
-            rating = float(match.group())
+    for selector in rating_selectors:
 
-    # FLIPKART RATING
-    if rating is None:
-        flipkart_rating = soup.select_one("._3LWZlK")
-        if flipkart_rating:
-            rating = float(flipkart_rating.text)
+        tag = soup.select_one(selector)
 
-    # STAR COUNT (for test sites)
-    if rating is None:
-        stars = soup.select(".glyphicon-star")
-        if stars:
-            rating = len(stars)
+        if tag:
+            match = re.search(r"\d+(\.\d+)?", tag.text)
+
+            if match:
+                rating = float(match.group())
+                break
 
     if rating is None:
         rating = round(random.uniform(3.0, 4.5), 1)
 
-    # ---------------------------
-    # SAMPLE REVIEWS
-    # ---------------------------
+    # DESCRIPTION TEXT (REAL SENTIMENT SOURCE)
 
-    review_pool = [
-        "Excellent product highly recommended",
-        "Very poor quality and disappointing",
-        "Good value for money",
-        "Average product but acceptable",
-        "Fantastic quality and durable",
-        "Not worth the price",
-        "Very satisfied with this purchase",
-        "Could be improved but decent overall"
-    ]
+    description_tags = soup.select("p")
 
-    reviews = random.sample(review_pool, 4)
+    description_text = []
 
-    return name, currency, price, rating, reviews
+    for tag in description_tags[:8]:
+        text = tag.text.strip()
+        if len(text) > 30:
+            description_text.append(text)
+
+    if not description_text:
+        description_text = ["This product has decent build quality and acceptable performance"]
+
+    return name, currency, price, rating, description_text
