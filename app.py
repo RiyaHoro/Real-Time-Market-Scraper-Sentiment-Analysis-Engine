@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from scraper.scraper import scrape_data
-from sentiment.sentiment import analyze_sentiment
+from scraper import scrape_data
+from sentiment import analyze_sentiment
 from db import connect_db
 
 
@@ -35,7 +35,6 @@ def save_result(name, price, rating, sentiment, decision):
     (product_name, price, rating, sentiment_score, decision)
     VALUES (%s,%s,%s,%s,%s)
     """
-
     cursor.execute(query, (name, price, rating, sentiment, decision))
 
     db.commit()
@@ -49,12 +48,7 @@ if st.button("Analyze Product"):
     sentiment = (sentiment + 1) / 2
 
     recommendation = decision(price, sentiment, rating)
-
-    save_result(name, price, rating, sentiment, recommendation)
-
-    st.subheader("Product Analysis")
-
-    st.write(f"**Product:** {name}")
+    
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -69,6 +63,7 @@ if st.button("Analyze Product"):
     st.progress(min(confidence,1.0))
 
     st.write("Confidence Score:", round(confidence,2))
+    
     db = connect_db()
 
     df = pd.read_sql("SELECT * FROM product_analysis", db)
