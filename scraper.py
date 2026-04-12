@@ -1,8 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-import random
 import re
-
 
 headers = {
     "User-Agent": "Mozilla/5.0"
@@ -21,126 +19,154 @@ def scrape_data(url):
         return scrape_generic(url)
 
 
-# -------------------------------
+# -----------------------------
 # FLIPKART SCRAPER
-# -------------------------------
+# -----------------------------
 
 def scrape_flipkart(url):
 
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Product name
+    # PRODUCT NAME
+    name = "Flipkart Product"
     name_tag = soup.select_one(".B_NuCI")
-    name = name_tag.text.strip() if name_tag else "Flipkart Product"
 
-    # Price
+    if name_tag:
+        name = name_tag.text.strip()
+
+    # PRICE
+    currency = "₹"
+    price = 0
+
     price_tag = soup.select_one("._30jeq3, .Nx9bqj")
 
-    price = None
-    currency = "₹"
-
     if price_tag:
-        price_text = price_tag.text
-        price_text = re.sub(r"[^\d.]", "", price_text)
+        price_text = re.sub(r"[^\d]", "", price_tag.text)
 
         try:
             price = float(price_text)
         except:
-            pass
+            price = 0
 
-    if price is None:
-        price = random.uniform(500, 2000)
+    # RATING
+    rating = 0
 
-    # Rating
     rating_tag = soup.select_one("._3LWZlK")
-
-    rating = None
 
     if rating_tag:
         try:
             rating = float(rating_tag.text.strip())
         except:
-            pass
+            rating = 0
 
-    if rating is None:
-        rating = random.uniform(3, 4.5)
+    # TEXT FOR SENTIMENT
+    reviews = []
 
-    # Description text
-    desc = []
+    for tag in soup.select("._1mXcCf, p")[:6]:
 
-    for tag in soup.select("p")[:8]:
         text = tag.text.strip()
+
         if len(text) > 30:
-            desc.append(text)
+            reviews.append(text)
 
-    if not desc:
-        desc = ["Good product with decent performance"]
+    if not reviews:
+        reviews = ["Product description available but limited sentiment data"]
 
-    return name, currency, price, rating, desc
+    return name, currency, price, rating, reviews
 
 
-# -------------------------------
+# -----------------------------
 # TEST SITE SCRAPER
-# -------------------------------
+# -----------------------------
 
 def scrape_testsite(url):
 
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Product name
-    name_tag = soup.select_one("h4 a")
-    name = name_tag.text.strip() if name_tag else "Test Product"
+    # -----------------
+    # PRODUCT NAME
+    # -----------------
 
-    # Price
+    name = "Test Product"
+
+    name_tag = soup.select_one(".card-title")
+
+    if name_tag:
+        name = name_tag.text.strip()
+
+    # -----------------
+    # PRICE
+    # -----------------
+
+    currency = "$"
+    price = 0
+
     price_tag = soup.select_one(".price")
 
-    price = None
-    currency = "$"
-
     if price_tag:
-        price_text = price_tag.text
-        price_text = re.sub(r"[^\d.]", "", price_text)
+        price_text = re.sub(r"[^\d.]", "", price_tag.text)
 
         try:
             price = float(price_text)
         except:
-            pass
+            price = 0
 
-    if price is None:
-        price = random.uniform(50, 100)
+    # -----------------
+    # RATING
+    # -----------------
 
-    # Rating
-    stars = soup.select(".ratings .glyphicon-star")
+    rating = 0
 
-    rating = len(stars)
+    review_tag = soup.select_one('[itemprop="reviewCount"]')
 
-    if rating == 0:
-        rating = random.uniform(3, 4.5)
+    if review_tag:
+        try:
+            reviews_count = int(review_tag.text.strip())
 
-    # Description
+            # simple approximation: convert review count to rating
+            rating = min(5, round(reviews_count / 2))
+
+        except:
+            rating = 0
+
+    # -----------------
+    # DESCRIPTION
+    # -----------------
+
     desc_tag = soup.select_one(".description")
 
-    desc = [desc_tag.text.strip()] if desc_tag else ["Average product"]
+    reviews = []
 
-    return name, currency, price, rating, desc
+    if desc_tag:
+        reviews.append(desc_tag.text.strip())
 
+    if not reviews:
+        reviews = ["Average product"]
 
-# -------------------------------
-# GENERIC FALLBACK SCRAPER
-# -------------------------------
-
+    return name, currency, price, rating, reviews
 def scrape_generic(url):
 
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    name = soup.title.text if soup.title else "Unknown Product"
+    name = soup.title.text.strip() if soup.title else "Unknown Product"
 
-    price = random.uniform(50, 200)
-    rating = random.uniform(3, 4.5)
+    currency = "$"
+    price = 0
+    rating = 0
 
-    desc = ["Product description not available"]
+    reviews = []
 
-    return name, "$", price, rating, desc
+    for tag in soup.select("p")[:6]:
+
+        text = tag.text.strip()
+
+        if len(text) > 30:
+            reviews.append(text)
+
+    if not reviews:
+        reviews = ["Limited product description available"]
+
+    return name, currency, price, rating, reviews

@@ -147,7 +147,9 @@ streamlit run app.py
 6. Dashboard displays analytics graphs
 
 ---
-
+## Demo
+![alt text](image-1.png)
+![alt text](image.png)
 ## Future Improvements
 
 • Scrape real product reviews instead of description text  
