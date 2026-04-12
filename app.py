@@ -18,13 +18,12 @@ def decision(price, sentiment, rating):
 
     score = (sentiment * 0.7) + ((rating / 5) * 0.3)
 
-    if score > 0.6:
+    if score > 0.5:
         return "BUY RECOMMENDED"
-    elif score > 0.3:
+    elif score > 0.2:
         return "HOLD"
     else:
         return "DO NOT BUY"
-
 
 def save_result(name, price, rating, sentiment, decision):
 
@@ -47,6 +46,7 @@ if st.button("Analyze Product"):
     name, currency, price, rating, reviews = scrape_data(url)
 
     sentiment = analyze_sentiment(reviews)
+    sentiment = (sentiment + 1) / 2
 
     recommendation = decision(price, sentiment, rating)
 
