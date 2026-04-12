@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from scraper.scraper import scrape_data
 from sentiment.sentiment import analyze_sentiment
-from database.db import connect_db
+from db import connect_db
 
 
 st.set_page_config(page_title="MarketLens", layout="wide")
