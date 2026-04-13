@@ -19,9 +19,8 @@ def scrape_data(url):
         return scrape_generic(url)
 
 
-# -----------------------------
+
 # FLIPKART SCRAPER
-# -----------------------------
 
 def scrape_flipkart(url):
 
@@ -74,9 +73,9 @@ def scrape_flipkart(url):
         reviews = ["No reviews found"]
 
     return name, currency, price, rating, reviews
-# -----------------------------
+
 # TEST SITE SCRAPER
-# -----------------------------
+
 
 def scrape_testsite(url):
 
@@ -125,9 +124,8 @@ def scrape_testsite(url):
     return name, currency, price, rating, reviews
 
 
-# -----------------------------
 # GENERIC SCRAPER
-# -----------------------------
+
 
 def scrape_generic(url):
 
