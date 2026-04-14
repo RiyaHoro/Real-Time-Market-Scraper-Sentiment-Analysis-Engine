@@ -63,10 +63,10 @@ if st.button("Analyze Product"):
     col3.metric("Sentiment Score", round(sentiment, 2))
     col4.metric("Recommendation", recommendation)
 
-    confidence = abs(sentiment - 0.5) * 2
+    # confidence = abs(sentiment - 0.5) * 2
 
-    st.progress(min(confidence, 1.0))
-    st.write("Confidence Score:", round(confidence, 2))
+    # st.progress(min(confidence, 1.0))
+    # st.write("Confidence Score:", round(confidence, 2))
 
 
     db = connect_db()
@@ -96,15 +96,4 @@ if st.button("Analyze Product"):
 
         st.pyplot(fig1)
 
-    # Price vs sentiment
-    with colB:
-
-        fig2, ax2 = plt.subplots()
-
-        ax2.scatter(df_recent["price"], df_recent["sentiment_score"])
-
-        ax2.set_title("Price vs Sentiment")
-        ax2.set_xlabel("Price")
-        ax2.set_ylabel("Sentiment Score")
-
-        st.pyplot(fig2)
+    
